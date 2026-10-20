@@ -1,0 +1,15 @@
+services:
+  incubrix:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ASR_MODEL: ${ASR_MODEL:-small}
+      ASR_DEVICE: ${ASR_DEVICE:-cpu}
+      ASR_COMPUTE_TYPE: ${ASR_COMPUTE_TYPE:-int8}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data/stock_clips:/app/data/stock_clips:ro
+      - ./outputs:/app/outputs
+      - ./projects:/app/projects
+    restart: unless-stopped

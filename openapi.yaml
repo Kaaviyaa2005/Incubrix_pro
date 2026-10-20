@@ -1,0 +1,145 @@
+openapi: 3.1.0
+info:
+  title: Incubrix Pro Prototype API
+  version: 2.1.0
+  description: Current synchronous prototype API. See README for assessment gaps.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: Health alias
+      responses:
+        '200': {description: Health information}
+  /ready:
+    get:
+      summary: Readiness check
+      responses:
+        '200': {description: Readiness information}
+  /api/v1/health:
+    get:
+      summary: API health
+      responses:
+        '200': {description: Health information}
+  /api/v1/library:
+    get:
+      summary: List indexed local clips with metadata
+      responses:
+        '200': {description: Indexed media list}
+    post:
+      summary: Upload a video and save its metadata to the local library
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [video, category_name, title, description, tags]
+              properties:
+                video: {type: string, format: binary}
+                category_name: {type: string, enum: [Business, City, Finance, Nature, Technology, General]}
+                title: {type: string}
+                description: {type: string}
+                tags: {type: string, description: Comma-separated tags}
+                keywords: {type: string}
+                visual_elements: {type: string}
+                mood: {type: string}
+                source: {type: string}
+                creator: {type: string}
+                license_status: {type: string}
+                license_name: {type: string}
+                attribution_required: {type: string}
+                attribution_text: {type: string}
+                rights_notes: {type: string}
+                usage_restrictions: {type: string}
+                language: {type: string}
+                location: {type: string}
+                date_recorded: {type: string, format: date}
+                ai_generated: {type: string}
+                notes: {type: string}
+      responses:
+        '200': {description: Uploaded video and metadata saved}
+        '400': {description: Invalid metadata or unsupported format}
+        '413': {description: Video exceeds upload limit}
+        '422': {description: Video could not be read}
+  /api/v1/library/metadata:
+    get:
+      summary: Return the full media metadata catalog
+      responses:
+        '200': {description: JSON media catalog}
+  /api/v1/projects:
+    get:
+      summary: List saved projects
+      responses:
+        '200': {description: Saved project list}
+    post:
+      summary: Save project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': {description: Saved project}
+  /api/v1/projects/{pid}:
+    delete:
+      summary: Delete saved project
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Deleted}
+        '404': {description: Project not found}
+  /api/v1/generate:
+    post:
+      summary: Generate narrated B-roll video (synchronous)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                script: {type: string}
+                ratio: {type: string, enum: ['16:9', '9:16', '1:1']}
+                captions: {type: string, enum: ['on', 'off']}
+                font: {type: string}
+                font_size: {type: integer}
+                caption_color: {type: string}
+                caption_effects: {type: string, description: JSON object}
+                voice: {type: string}
+                scene_overrides: {type: string, description: JSON array}
+                audio: {type: string, format: binary}
+      responses:
+        '200': {description: Video and sidecar URLs}
+        '400': {description: Invalid input}
+        '500': {description: Render failed}
+  /media/{clip_path}:
+    get:
+      summary: Stream local media for preview
+      parameters:
+        - in: path
+          name: clip_path
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Media stream}
+        '404': {description: Clip not found}
+  /outputs/{job}/{filename}:
+    get:
+      summary: Download output file
+      parameters:
+        - in: path
+          name: job
+          required: true
+          schema: {type: string}
+        - in: path
+          name: filename
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Output file}
+        '404': {description: Output not found}
